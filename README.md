@@ -1,6 +1,6 @@
 # TestShot
 
-Lint Python source code and take screen shots to prove it.
+Lint Python source code and take screen shots to prove it.  A table is written to [`py-valid.md`](py-valid.md) for copying into your README.
 
 It is tested on Linux, probably works on Windows but won't work on Mac because the clipboard paste keyboard shortcut is different.
 
