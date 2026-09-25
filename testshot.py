@@ -36,11 +36,10 @@ def test_pep8(names):
     return result.total_errors == 0
 
 
-def screenshot_name(root, folder, name):
-    relpath = os.path.relpath(name, root)
-    no_extension = os.path.splitext(relpath)[0]
+def screenshot_rel_path(rel_path):
+    no_extension = os.path.splitext(rel_path)[0]
     png_name = no_extension.replace('/', '-') + ".png"
-    return os.path.join(folder, png_name)
+    return png_name
 
 
 # Program execution starts here
@@ -50,7 +49,9 @@ if len(sys.argv) != 2:
     exit(1)
 
 project_root = sys.argv[1]
-output_folder = os.path.join(project_root, "docs/py-valid")
+md_file_name = os.path.join(project_root, "py-valid.md")
+output_rel_path = "docs/py-valid"
+output_folder = os.path.join(project_root, output_rel_path)
 
 all_py = find_files("*.py", project_root)
 test_py = [name for name in all_py if not reject_file(name)]
@@ -66,28 +67,40 @@ try:
 except FileExistsError:
     pass
 
-driver = webdriver.Firefox()
-driver.get("https://pep8ci.herokuapp.com/")
+with open(md_file_name, "w") as md_file:
+    md_file.write("|Python File|Test Results|\n")
+    md_file.write("|-|-|\n")
 
-driver.implicitly_wait(2)
+    driver = webdriver.Firefox()
+    driver.get("https://pep8ci.herokuapp.com/")
 
-editor_div = driver.find_element(by=By.ID, value="editor")
-textarea = editor_div.find_element(by=By.CLASS_NAME, value="ace_text-input")
+    driver.implicitly_wait(2)
 
-for name_py in test_py:
-    # Clear content
-    textarea.send_keys(Keys.CONTROL, Keys.HOME)
-    textarea.send_keys(Keys.CONTROL, Keys.SHIFT, Keys.END)
-    textarea.send_keys(Keys.DELETE)
-    # Read the file
-    contents = Path(name_py).read_text()
-    # Put it on the clipboard
-    pyperclip.copy(contents)
-    # Paste it into the control
-    textarea.send_keys(Keys.CONTROL, 'v')
-    textarea.send_keys(Keys.CONTROL, Keys.HOME)
-    # Give it time to validate
-    time.sleep(1)
-    # Take a screenshot
-    driver.save_screenshot(
-        screenshot_name(project_root, output_folder, name_py))
+    editor_div = driver.find_element(by=By.ID, value="editor")
+    textarea = editor_div.find_element(
+        by=By.CLASS_NAME, value="ace_text-input")
+
+    for name_py in test_py:
+        # Clear content
+        textarea.send_keys(Keys.CONTROL, Keys.HOME)
+        textarea.send_keys(Keys.CONTROL, Keys.SHIFT, Keys.END)
+        textarea.send_keys(Keys.DELETE)
+        # Read the file
+        contents = Path(name_py).read_text()
+        # Put it on the clipboard
+        pyperclip.copy(contents)
+        # Paste it into the control
+        textarea.send_keys(Keys.CONTROL, 'v')
+        textarea.send_keys(Keys.CONTROL, Keys.HOME)
+        # Give it time to validate
+        time.sleep(1)
+        # Take a screenshot
+        file_rel_path = os.path.relpath(name_py, project_root)
+        shot_name = screenshot_rel_path(file_rel_path)
+        driver.save_screenshot(os.path.join(output_folder, shot_name))
+        shot_rel_path = os.path.join(output_rel_path, shot_name)
+        md_file.write(
+            f"|[{file_rel_path}]({file_rel_path})|![]({shot_rel_path})|\n")
+
+print(output_folder)
+print(md_file_name)
