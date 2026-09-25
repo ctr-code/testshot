@@ -2,11 +2,15 @@
 
 Lint Python source code and take screen shots to prove it.
 
+It is tested on Linux, probably works on Windows but won't work on Mac because the clipboard paste keyboard shortcut is different.
+
 Screenshots are created in `docs/py-valid`.
 
 If the lint fails it won't take any screenshots.
 
 The `reject_file` function determines if a python file is included.  If your virtual environment folder is not called `.venv` you'll need to add it in, otherwise the tool will pick up a great many library files.
+
+It's a bit janky so don't do anything while it's running.
 
 # Installation
 
