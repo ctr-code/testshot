@@ -55,6 +55,7 @@ output_folder = os.path.join(project_root, output_rel_path)
 
 all_py = find_files("*.py", project_root)
 test_py = [name for name in all_py if not reject_file(name)]
+test_py.sort()
 
 success = test_pep8(test_py)
 
